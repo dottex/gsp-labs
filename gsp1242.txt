@@ -1,0 +1,767 @@
+   [1]Google Skills
+   ____________________
+   Loading...
+   No results found.
+
+   Share on LinkedIn Feed X Facebook dashboard
+   Current streak count
+   2
+   Share on LinkedIn Feed X Facebook
+
+Jonatan Hernandez
+
+   Member since 2020
+   [2]Starter Pro
+    1. navigate_next
+    2. [3]Professional Cloud Architect Certification Renewal via Google
+       Skills navigate_next
+    3. [4]Manage Scalable Workloads in GKE navigate_next
+    4. Manage and Secure Distributed Services with GKE Managed Service
+       Mesh
+
+   (BUTTON) —/100
+
+Checkpoints
+
+   Enable required APIs
+   Check my progress
+
+   / 25
+
+   Prepare your environment
+   Check my progress
+
+   / 25
+
+   Install GKE Service Mesh
+   Check my progress
+
+   / 25
+
+   Deploy the Cymbal Bank application
+   Check my progress
+
+   / 25
+
+   IFRAME: [5]ReCAPTCHA
+
+
+                   ____________________________________________
+   ____________________________________________________________
+   ____________________________________________________________
+   ____________________________________________________________
+
+   Enable required APIs
+   Check my progress
+
+   / 25
+
+   Prepare your environment
+   Check my progress
+
+   / 25
+
+   Install GKE Service Mesh
+   Check my progress
+
+   / 25
+
+   Deploy the Cymbal Bank application
+   Check my progress
+
+   / 25
+   This lab may incorporate AI tools to support your learning.
+
+GSP1242
+
+   Google Cloud Self-Paced Labs
+
+Overview
+
+   GKE [6]Service Mesh is based on the open source Istio technology. A
+   distributed service is a Kubernetes Service that acts as a single
+   logical service. These services are more resilient than Kubernetes
+   services because they operate on multiple Kubernetes clusters in the
+   same namespace. A distributed service remains operational even if one
+   or more GKE clusters are down, as long as the healthy clusters serve
+   the expected load.
+
+   GKE private clusters allow you to configure the nodes and API server as
+   private resources available only on the Virtual Private Cloud (VPC)
+   network. Running distributed services in GKE private clusters gives
+   enterprises secure and reliable services.
+
+   This lab teaches you how to run distributed services on multiple Google
+   Kubernetes Engine (GKE) clusters in Google Cloud. You will learn how to
+   expose a distributed service using Multi Cluster Ingress and GKE
+   Service Mesh.
+
+Objectives
+
+   In this lab, you learn how to perform the following tasks:
+     * Create three GKE clusters.
+     * Configure two of the GKE clusters as private clusters.
+     * Configure one GKE cluster (gke-ingress) as the central
+       configuration cluster.
+     * Configure networking (NAT Gateways, Cloud Router, and firewall
+       rules) to allow inter-cluster and egress traffic from the two
+       private GKE clusters.
+     * Configure authorized networks to allow API service access from
+       Cloud Shell to the two private GKE clusters.
+     * Deploy and configure multi-cluster GKE Service Mesh to the two
+       private clusters in multi-primary mode.
+     * Deploy the Cymbal Bank application on the two private clusters.
+
+Scenario
+
+   In this lab you will deploy the [7]Cymbal Bank sample application on
+   two GKE private clusters. Cymbal Bank is a sample microservices
+   application that consists of multiple microservices and SQL databases
+   that simulate an online banking app. The application consists of a web
+   frontend that clients can access, and several backend services such as
+   balance, ledger, and account services that simulate a bank.
+
+   The application includes two PostgreSQL databases that are installed in
+   Kubernetes as StatefulSets. One database is used for transactions,
+   while the other database is used for user accounts. All services except
+   the two databases run as distributed services. This means that Pods for
+   all services run in both application clusters (in the same namespace),
+   and GKE Service Mesh is configured so that each service appears as a
+   single logical service.
+
+Setup and requirements
+
+Before you click the Start Lab button
+
+   Note: Read these instructions.
+
+   Labs are timed and you cannot pause them. The timer, which starts when
+   you click Start Lab, shows how long Google Cloud resources will be made
+   available to you.
+
+   This Google Skills hands-on lab lets you do the lab activities yourself
+   in a real cloud environment, not in a simulation or demo environment.
+   It does so by giving you new, temporary credentials that you use to
+   sign in and access Google Cloud for the duration of the lab.
+
+What you need
+
+   To complete this lab, you need:
+     * Access to a standard internet browser (Chrome browser recommended).
+     * Time to complete the lab.
+
+   Note: If you already have your own personal Google Cloud account or
+   project, do not use it for this lab. Note: If you are using a
+   Pixelbook, open an Incognito window to run this lab.
+
+How to start your lab and sign in to the Google Cloud console
+
+    1. Click the Start Lab button. If you need to pay for the lab, a
+       dialog opens for you to select your payment method. On the right is
+       the Lab setup and access panel with the following:
+          + The Open Google Cloud console button
+          + The temporary credentials (username and password) that you
+            must use for this lab
+          + Other information, if needed, to step through this lab
+       Note that the lab timer is located near the top of the page,
+       showing the remaining time.
+    2. Click Open Google Cloud console (or right-click and select Open
+       Link in Incognito Window if you are running the Chrome browser).
+       The lab spins up resources, and then opens another tab that shows
+       the Sign in page.
+       Tip: Arrange the tabs in separate windows, side-by-side.
+       Note: If you see the Choose an account dialog, click Use Another
+       Account.
+    3. If necessary, copy the Username below and paste it into the Sign in
+       dialog.
+       {{{user_0.username | "Username"}}}
+       You can also find the Username in the Lab setup and access panel.
+    4. Click Next.
+    5. Copy the Password below and paste it into the Welcome dialog.
+       {{{user_0.password | "Password"}}}
+       You can also find the Password in the Lab setup and access panel.
+    6. Click Next.
+       Important: You must use the credentials the lab provides you. Do
+       not use your Google Cloud account credentials. Note: Using your own
+       Google Cloud account for this lab may incur extra charges.
+    7. Click through the subsequent pages:
+          + Accept the terms and conditions.
+          + Do not add recovery options or two-factor authentication
+            (because this is a temporary account).
+          + Do not sign up for free trials.
+
+   After a few moments, the Google Cloud console opens in this tab.
+   Note: To access Google Cloud products and services, click the
+   Navigation menu or type the service or product name in the Search
+   field. Navigation menu icon and Search field
+
+Activate Google Cloud Shell
+
+   Google Cloud Shell is a virtual machine that is loaded with development
+   tools. It offers a persistent 5GB home directory and runs on the Google
+   Cloud.
+
+   Google Cloud Shell provides command-line access to your Google Cloud
+   resources.
+    1. In Cloud console, on the top right toolbar, click the Open Cloud
+       Shell button.
+       Highlighted Cloud Shell icon
+    2. Click Continue.
+
+   It takes a few moments to provision and connect to the environment.
+   When you are connected, you are already authenticated, and the project
+   is set to your PROJECT_ID. For example:
+
+   Project ID highlighted in the Cloud Shell Terminal
+
+   gcloud is the command-line tool for Google Cloud. It comes
+   pre-installed on Cloud Shell and supports tab-completion.
+     * You can list the active account name with this command:
+
+   gcloud auth list
+
+   Output:
+   Credentialed accounts: - @.com (active)
+
+   Example output:
+   Credentialed accounts: - google1623327_student@qwiklabs.net
+     * You can list the project ID with this command:
+
+   gcloud config list project
+
+   Output:
+   [core] project =
+
+   Example output:
+   [core] project = qwiklabs-gcp-44776a13dea667a6 Note: Full documentation
+   of gcloud is available in the [8]gcloud CLI overview guide .
+
+Task 1. Enable required APIs
+
+   Start by enabling the required APIs, as well as the GKE Service Mesh
+   Fleet, for your project:
+    1. Enable the required GKE Hub and Service Mesh APIs using the
+       following command:
+
+   gcloud services enable \
+   --project={{{primary_project.project_id|PROJECT_ID}}} \
+   container.googleapis.com \ mesh.googleapis.com \ gkehub.googleapis.com
+    2. Enable the GKE Service Mesh Fleet for your project:
+
+   gcloud container fleet mesh enable
+   --project={{{primary_project.project_id|PROJECT_ID}}}
+
+   Click Check my progress to verify the objective. Enable required APIs
+
+Task 2. Create private GKE clusters
+
+   Now, prepare your environment and create private GKE clusters before
+   installing the GKE Service Mesh.
+
+Prepare networking for private GKE clusters.
+
+    1. In Cloud Shell, create and reserve an external IP address for the
+       NAT gateway:
+
+   gcloud compute addresses create {{{primary_project.default_region |
+   REGION}}}-nat-ip \
+   --project={{{primary_project.project_id|PROJECT_ID}}} \
+   --region={{{primary_project.default_region | REGION}}}
+    2. Store the IP address and name of the IP address in a variable:
+
+   export NAT_REGION_1_IP_ADDR=$(gcloud compute addresses describe
+   {{{primary_project.default_region | REGION}}}-nat-ip \
+   --project={{{primary_project.project_id|PROJECT_ID}}} \
+   --region={{{primary_project.default_region | REGION}}} \
+   --format='value(address)') export NAT_REGION_1_IP_NAME=$(gcloud compute
+   addresses describe {{{primary_project.default_region | REGION}}}-nat-ip
+   \ --project={{{primary_project.project_id|PROJECT_ID}}} \
+   --region={{{primary_project.default_region | REGION}}} \
+   --format='value(name)')
+    3. Create a Cloud NAT gateway in the region of the private GKE
+       clusters:
+
+   gcloud compute routers create rtr-{{{primary_project.default_region |
+   REGION}}} \ --network=default \ --region
+   {{{primary_project.default_region | REGION}}} gcloud compute routers
+   nats create nat-gw-{{{primary_project.default_region | REGION}}} \
+   --router=rtr-{{{primary_project.default_region | REGION}}} \ --region
+   {{{primary_project.default_region | REGION}}} \
+   --nat-external-ip-pool=${NAT_REGION_1_IP_NAME} \
+   --nat-all-subnet-ip-ranges \ --enable-logging
+    4. Execute the following command to create a firewall rule that allows
+       Pod-to-Pod communication and Pod-to-API server communication:
+
+   gcloud compute firewall-rules create all-pods-and-master-ipv4-cidrs \
+   --project {{{primary_project.project_id|PROJECT_ID}}} \ --network
+   default \ --allow all \ --direction INGRESS \ --source-ranges
+   172.16.0.0/28,172.16.1.0/28,172.16.2.0/28,0.0.0.0/0
+
+   Pod-to-Pod communication allows the distributed services to communicate
+   with each other across GKE clusters. Pod-to-API server communication
+   lets the GKE Service Mesh control plane query GKE clusters for service
+   discovery.
+    5. Retrieve the updated Cloud Shell and lab-setup VM public IP
+       address:
+
+   export CLOUDSHELL_IP=$(dig +short myip.opendns.com
+   @resolver1.opendns.com) export LAB_VM_IP=$(gcloud compute instances
+   describe lab-setup
+   --format='get(networkInterfaces[0].accessConfigs[0].natIP)'
+   --zone={{{primary_project.default_zone | ZONE}}})
+
+Create private GKE clusters
+
+   In this task you create two private clusters that have authorized
+   networks. Configure the clusters to allow access from the Pod IP CIDR
+   range (for the GKE Service Mesh control plane) from Cloud Shell, so
+   that you can access the clusters from your terminal.
+    1. Create the first GKE cluster (with the --async flag to avoid
+       waiting for the first cluster to provision) with authorized
+       networks:
+
+   gcloud container clusters create cluster1 \ --project
+   {{{primary_project.project_id|PROJECT_ID}}} \
+   --zone={{{primary_project.default_zone | ZONE}}} \ --machine-type
+   "e2-standard-4" \ --num-nodes "2" --min-nodes "2" --max-nodes "2" \
+   --enable-ip-alias --enable-autoscaling \
+   --workload-pool={{{primary_project.project_id|PROJECT_ID}}}.svc.id.goog
+   \ --enable-private-nodes \ --master-ipv4-cidr=172.16.0.0/28 \
+   --enable-master-authorized-networks \ --master-authorized-networks
+   $NAT_REGION_1_IP_ADDR/32,$CLOUDSHELL_IP/32,$LAB_VM_IP/32 --async
+    2. Create the second GKE cluster with authorized networks:
+
+   gcloud container clusters create cluster2 \ --project
+   {{{primary_project.project_id|PROJECT_ID}}} \
+   --zone={{{primary_project.default_zone | ZONE}}} \ --machine-type
+   "e2-standard-4" \ --num-nodes "2" --min-nodes "2" --max-nodes "2" \
+   --enable-ip-alias --enable-autoscaling \
+   --workload-pool={{{primary_project.project_id|PROJECT_ID}}}.svc.id.goog
+   \ --enable-private-nodes \ --master-ipv4-cidr=172.16.1.0/28 \
+   --enable-master-authorized-networks \ --master-authorized-networks
+   $NAT_REGION_1_IP_ADDR/32,$CLOUDSHELL_IP/32,$LAB_VM_IP/32 Note: It can
+   take up to 10 minutes to provision the GKE clusters.
+    3. Verify that both the clusters are in running state:
+
+   gcloud container clusters list
+    4. Connect to both clusters to generate entries in the kubeconfig
+       file:
+
+   touch ~/asm-kubeconfig && export KUBECONFIG=~/asm-kubeconfig gcloud
+   container clusters get-credentials cluster1 --zone
+   {{{primary_project.default_zone | ZONE}}} gcloud container clusters
+   get-credentials cluster2 --zone {{{primary_project.default_zone |
+   ZONE}}}
+    5. Rename the cluster contexts for convenience:
+
+   kubectl config rename-context \
+   gke_{{{primary_project.project_id|PROJECT_ID}}}_{{{primary_project.defa
+   ult_zone | ZONE}}}_cluster1 cluster1 kubectl config rename-context \
+   gke_{{{primary_project.project_id|PROJECT_ID}}}_{{{primary_project.defa
+   ult_zone | ZONE}}}_cluster2 cluster2
+    6. Confirm that both cluster contexts are properly renamed and
+       configured:
+
+   kubectl config get-contexts --output="name"
+    7. Register your clusters to a fleet:
+
+   gcloud container fleet memberships register cluster1
+   --gke-cluster={{{primary_project.default_zone | ZONE}}}/cluster1
+   --enable-workload-identity gcloud container fleet memberships register
+   cluster2 --gke-cluster={{{primary_project.default_zone |
+   ZONE}}}/cluster2 --enable-workload-identity
+
+Update the authorized networks for the clusters.
+
+   Note: The Cloud Shell IP address is also part of the authorized
+   networks, which allows you to access and manage clusters from your
+   Cloud Shell terminal.
+
+   Cloud Shell public-facing IP addresses are dynamic, so each time you
+   start Cloud Shell, you might get a different public IP address. When
+   you get a new IP address, you lose access to the clusters, as the new
+   IP address isn't part of the authorized networks for the two clusters.
+
+   You will need to perform following steps every time you start a new
+   Cloud shell session during this lab.
+
+   If you lose access to the clusters, update the clusters' authorized
+   networks to include the new Cloud Shell IP address:
+    1. Set environment variables:
+
+   export CLOUDSHELL_IP=$(dig +short myip.opendns.com
+   @resolver1.opendns.com) export LAB_VM_IP=$(gcloud compute instances
+   describe lab-setup
+   --format='get(networkInterfaces[0].accessConfigs[0].natIP)'
+   --zone={{{primary_project.default_zone | ZONE}}}) export
+   NAT_REGION_1_IP_ADDR=$(gcloud compute addresses describe
+   {{{primary_project.default_region | REGION}}}-nat-ip \
+   --project={{{primary_project.project_id|PROJECT_ID}}} \
+   --region={{{primary_project.default_region | REGION}}} \
+   --format='value(address)')
+    2. Update the authorized networks for the two clusters:
+
+   gcloud container clusters update cluster1 \
+   --zone={{{primary_project.default_zone | ZONE}}} \
+   --enable-master-authorized-networks \ --master-authorized-networks
+   $NAT_REGION_1_IP_ADDR/32,$CLOUDSHELL_IP/32,$LAB_VM_IP/32 gcloud
+   container clusters update cluster2 \
+   --zone={{{primary_project.default_zone | ZONE}}} \
+   --enable-master-authorized-networks \ --master-authorized-networks
+   $NAT_REGION_1_IP_ADDR/32,$CLOUDSHELL_IP/32,$LAB_VM_IP/32
+
+   Click Check my progress to verify the objective. Prepare your
+   environment
+
+Task 3. Install GKE Service Mesh
+
+   In this section, you install GKE Service Mesh on the two GKE clusters
+   and configure the clusters for cross-cluster service discovery.
+    1. Install GKE Service Mesh on both clusters using the fleet API:
+
+   gcloud container fleet mesh update --management automatic --memberships
+   cluster1,cluster2
+    2. After the managed GKE Service Mesh is enabled on the clusters, set
+       a watch for the mesh to be installed:
+
+   watch -g "gcloud container fleet mesh describe | grep 'code:
+   REVISION_READY'" Note: It can take up to 10 minutes to install GKE
+   Service Mesh on both clusters.
+    3. Once the REVISION_READY output is displayed, press ctrl+c to exit
+       the previous command.
+    4. Install GKE Service Mesh ingress gateways for both clusters:
+
+   kubectl --context=cluster1 create namespace asm-ingress kubectl
+   --context=cluster1 label namespace asm-ingress istio-injection=enabled
+   --overwrite kubectl --context=cluster2 create namespace asm-ingress
+   kubectl --context=cluster2 label namespace asm-ingress
+   istio-injection=enabled --overwrite cat <<'EOF' > asm-ingress.yaml
+   apiVersion: v1 kind: Service metadata: name: asm-ingressgateway
+   namespace: asm-ingress spec: type: LoadBalancer selector: asm:
+   ingressgateway ports: - port: 80 name: http - port: 443 name: https ---
+   apiVersion: apps/v1 kind: Deployment metadata: name: asm-ingressgateway
+   namespace: asm-ingress spec: selector: matchLabels: asm: ingressgateway
+   template: metadata: annotations: # This is required to tell GKE Service
+   Mesh to inject the gateway with the # required configuration.
+   inject.istio.io/templates: gateway labels: asm: ingressgateway spec:
+   containers: - name: istio-proxy image: auto # The image will
+   automatically update each time the pod starts. --- apiVersion:
+   rbac.authorization.k8s.io/v1 kind: Role metadata: name:
+   asm-ingressgateway-sds namespace: asm-ingress rules: - apiGroups: [""]
+   resources: ["secrets"] verbs: ["get", "watch", "list"] --- apiVersion:
+   rbac.authorization.k8s.io/v1 kind: RoleBinding metadata: name:
+   asm-ingressgateway-sds namespace: asm-ingress roleRef: apiGroup:
+   rbac.authorization.k8s.io kind: Role name: asm-ingressgateway-sds
+   subjects: - kind: ServiceAccount name: default EOF kubectl
+   --context=cluster1 apply -f asm-ingress.yaml kubectl --context=cluster2
+   apply -f asm-ingress.yaml
+    5. Verify that the GKE Service Mesh ingress gateways are deployed:
+
+   kubectl --context=cluster1 get pod,service -n asm-ingress kubectl
+   --context=cluster2 get pod,service -n asm-ingress
+
+   The output for both clusters shoud look as follows:
+   NAME READY STATUS RESTARTS AGE pod/asm-ingressgateway-5894744dbd-zxlgc
+   1/1 Running 0 84s NAME TYPE CLUSTER-IP EXTERNAL-IP PORT(S) AGE
+   service/asm-ingressgateway LoadBalancer 10.16.2.131 34.102.100.138
+   80:30432/TCP,443:30537/TCP 92s Install GKE Service Mesh
+
+   After the GKE Service Mesh control plane and ingress gateways are
+   installed for both clusters, cross-cluster service discovery is enabled
+   with the fleet API. Cross-cluster service discovery allows the two
+   clusters discover service endpoints from the remote cluster.
+   Distributed services run on multiple clusters in the same namespace.
+
+   The clusters and GKE Service Mesh are now configured.
+
+Task 4. Deploy the Cymbal Bank application
+
+   Now, it's time to deploy the application and access Cymbal Bank.
+    1. Clone the Cymbal Bank GitHub repository (called "Bank of Anthos" in
+       the repository):
+
+   git clone https://github.com/GoogleCloudPlatform/bank-of-anthos.git
+   ${HOME}/bank-of-anthos
+    2. Create and label a bank-of-anthos namespace in both clusters. The
+       label allows automatic injection of the sidecar Envoy proxies in
+       every pod within the labeled namespace:
+
+   kubectl create --context=cluster1 namespace bank-of-anthos kubectl
+   label --context=cluster1 namespace bank-of-anthos
+   istio-injection=enabled kubectl create --context=cluster2 namespace
+   bank-of-anthos kubectl label --context=cluster2 namespace
+   bank-of-anthos istio-injection=enabled
+    3. Deploy the Cymbal Bank application to both clusters in the
+       bank-of-anthos namespace:
+
+   kubectl --context=cluster1 -n bank-of-anthos apply -f
+   ${HOME}/bank-of-anthos/extras/jwt/jwt-secret.yaml kubectl
+   --context=cluster2 -n bank-of-anthos apply -f
+   ${HOME}/bank-of-anthos/extras/jwt/jwt-secret.yaml kubectl
+   --context=cluster1 -n bank-of-anthos apply -f
+   ${HOME}/bank-of-anthos/kubernetes-manifests kubectl --context=cluster2
+   -n bank-of-anthos apply -f ${HOME}/bank-of-anthos/kubernetes-manifests
+
+   The Kubernetes services need to be in both clusters for service
+   discovery. When a service in one of the clusters tries to make a
+   request, it first performs a DNS lookup for the hostname to get the IP
+   address. In GKE, the kube-dns server running in the cluster handles
+   this lookup, so a configured service definition is required.
+    4. Delete the StatefulSets from one cluster so that the two PostgreSQL
+       databases exist in only one of the clusters:
+
+   kubectl --context=cluster2 -n bank-of-anthos delete statefulset
+   accounts-db kubectl --context=cluster2 -n bank-of-anthos delete
+   statefulset ledger-db
+
+   Make sure that all pods are running in both clusters.
+    5. Get Pods from cluster1:
+
+   kubectl --context=cluster1 -n bank-of-anthos get pod
+
+   The output should display the following:
+   NAME READY STATUS RESTARTS AGE accounts-db-0 2/2 Running 0 9m54s
+   balancereader-c5d664b4c-xmkrr 2/2 Running 0 9m54s
+   contacts-7fd8c5fb6-wg9xn 2/2 Running 1 9m53s frontend-7b7fb9b665-m7cw7
+   2/2 Running 1 9m53s ledger-db-0 2/2 Running 0 9m53s
+   ledgerwriter-7b5b6db66f-xhbp4 2/2 Running 0 9m53s
+   loadgenerator-7fb54d57f8-g5lz5 2/2 Running 0 9m52s
+   transactionhistory-7fdb998c5f-vqh5w 2/2 Running 1 9m52s
+   userservice-76996974f5-4wlpf 2/2 Running 1 9m52s
+    6. Get pods from cluster2:
+
+   kubectl --context=cluster2 -n bank-of-anthos get pod
+
+   The output should display the following:
+   NAME READY STATUS RESTARTS AGE balancereader-c5d664b4c-bn2pl 2/2
+   Running 0 9m54s contacts-7fd8c5fb6-kv8cp 2/2 Running 0 9m53s
+   frontend-7b7fb9b665-bdpp4 2/2 Running 0 9m53s
+   ledgerwriter-7b5b6db66f-297c2 2/2 Running 0 9m52s
+   loadgenerator-7fb54d57f8-tj44v 2/2 Running 0 9m52s
+   transactionhistory-7fdb998c5f-xvmtn 2/2 Running 0 9m52s
+   userservice-76996974f5-mg7t6 2/2 Running 0 9m51s
+
+   Make sure that all Pods are running in both clusters.
+    7. Deploy the GKE Service Mesh configs to both clusters:
+
+   cat <<'EOF' > asm-vs-gateway.yaml apiVersion:
+   networking.istio.io/v1alpha3 kind: Gateway metadata: name:
+   asm-ingressgateway namespace: asm-ingress spec: selector: asm:
+   ingressgateway servers: - port: number: 80 name: http protocol: HTTP
+   hosts: - "*" --- apiVersion: networking.istio.io/v1alpha3 kind:
+   VirtualService metadata: name: frontend namespace: bank-of-anthos spec:
+   hosts: - "*" gateways: - asm-ingress/asm-ingressgateway http: - route:
+   - destination: host: frontend port: number: 80 EOF kubectl
+   --context=cluster1 apply -f asm-vs-gateway.yaml kubectl
+   --context=cluster2 apply -f asm-vs-gateway.yaml
+
+   This command creates a Gateway in the asm-ingress namespace and
+   VirtualService in the bank-of-anthos namespaces for the frontend
+   service, which allows you to ingress traffic to the frontend service.
+
+   Gateways are generally owned by the platform admins or the network
+   admins team. Therefore, this Gateway resource is created in the Ingress
+   Gateway namespace owned by the platform admin and could be used in
+   other namespaces via their own VirtualService entries. This is known as
+   a Shared Gateway model.
+
+Access Cymbal Bank
+
+   To access the Cymbal Bank application, use the asm-ingressgateway
+   service public IP address from either cluster.
+    8. Retrieve the asm-ingressgateway IP addresses from both clusters:
+
+   kubectl --context cluster1 \ --namespace asm-ingress get svc
+   asm-ingressgateway -o jsonpath='{.status.loadBalancer}' | grep
+   "ingress" kubectl --context cluster2 \ --namespace asm-ingress get svc
+   asm-ingressgateway -o jsonpath='{.status.loadBalancer}' | grep
+   "ingress"
+    9. Open a new web browser tab and go to either IP address from the
+       previous output. The Cymbal Bank frontend should be displayed. If
+       you were to log in, deposit funds to your account, or transfer
+       funds to other accounts, this would be the page wherein you'd
+       action it.
+
+   The application should now be fully functional.
+   Deploy the Cymbal Bank application
+
+Task 5. Visualize distributed services
+
+   Now, discover how you can visualize the requests from the clusters
+   within both regions.
+    1. To view your services, from the console, go to Kubernetes Engine,
+       and select Service Mesh from the side panel.
+
+   You can view services in List view or in a Topology view. The List view
+   shows all of your distributed services running in a tabular format. The
+   Topology view allows you to explore a service topology graph
+   visualization showing your mesh's services and their relationships.
+    2. In the List view, click the frontend distributed service. When you
+       click an individual service, a detailed view of the service along
+       with connected services is displayed. In the service details view,
+       you can create SLOs and view a historical timeline of the service
+       by clicking Show Timeline.
+    3. To view golden signals, on the side panel, click Metrics.
+    4. In the Requests per seconds chart, click Breakdown By and then
+       select Cluster.
+
+   The results display the requests per second from both clusters in the
+   two regions. The distributed service is healthy and both endpoints are
+   serving traffic.
+    5. To view the topology of your service mesh, on the side panel, go to
+       Kubernetes Engine, and select Service Mesh from the side panel.
+    6. To view additional data, hold your mouse pointer over the frontend
+       service. This displays information like requests per second to and
+       from the frontend to other services.
+    7. To view more details, click Expand on the frontend service. A
+       Service and a Workload are displayed. You can further expand
+       workload into two Deployments:
+
+     * Expand the deployments into ReplicaSets
+     * Expand the ReplicaSets into Pods.
+
+   When you expand all elements, the distributed frontend service is
+   listed, which is essentially a Service and two Pods.
+
+Congratulations!
+
+   You have successfully run distributed services on multiple GKE clusters
+   in Google Cloud and observed the services using GKE Service Mesh.
+
+Next steps / Learn more
+
+     * For more information about service mesh, refer to [9]Managed
+       Service Mesh on GKE.
+
+   Manual Last Updated May 13, 2024
+
+   Lab Last Tested April 16, 2024
+
+   Copyright 2026 Google LLC All rights reserved. Google and the Google
+   logo are trademarks of Google LLC. All other company and product names
+   may be trademarks of the respective companies with which they are
+   associated.
+   Previous
+   Next
+   [10]
+   Google Skills
+   [11]Dashboard [12]Catalog [13]Paths [14]Subscriptions [15]Activities
+   [16]Achievements [17]Settings [18]Sign out
+   [19]Youtube [20]Help Center [21]Terms [22]Privacy Manage cookies
+
+   Authorize Header
+
+Recertify in 3 simple steps:
+
+   Link your Google Skills and certification account profiles using the
+   same email to get started.
+   Instantly see which certifications are eligible for renewal.
+   Complete courses and skill badges to renew your certifications
+   automatically.
+
+   By clicking "Accept", I consent to share my name, email, and course
+   completion data with Google Skills' certification partner, CM Connect,
+   to receive continuing education credit for certification renewal.
+
+   [start_lab-f45aca49782d4033c3ff688160387ac98c66941d.png]
+
+Before you begin
+
+    1. Labs create a Google Cloud project and resources for a fixed time
+    2. Labs have a time limit and no pause feature. If you end the lab,
+       you'll have to restart from the beginning.
+    3. On the top left of your screen, click Start lab to begin
+
+   [open_incognito_window-3ab2004605e88542dd7732361c3fc0e010c7fb6e.png]
+
+Use private browsing
+
+    1. Copy the provided Username and Password for the lab
+    2. Click Open console in private mode
+
+   [google_sign_in-f9eb84339d08f7db8c5fdfa7ce7726d3531dae80.png]
+
+Sign in to the Console
+
+    1. Sign in using your lab credentials. Using other credentials might
+       cause errors or incur charges.
+    2. Accept the terms, and skip the recovery resource page
+    3. Don't click End lab unless you've finished the lab or want to
+       restart it, as it will clear your work and remove the project
+
+   [disable_lab-47cff1f6bc3610f58767251ff93c2f99cf4f9040.png]
+
+   This content is not currently available
+
+   We will notify you via email when it becomes available
+   [notifcation_subscribed-2b4f9e51439e1a107488ab58a6e13c3c62ef8855.png]
+
+   Great!
+
+   We will contact you via email if it becomes available
+   [quota_empty-2ba3ec879dea3091828ec9cfa060947292e2c554.png]
+
+   [one_lab_quota-77010e9a83e0a6c7543477868b8b808d70222adb.png]
+
+   One lab at a time
+
+   Confirm to end all existing labs and start this one
+
+   [open_incognito_window-3ab2004605e88542dd7732361c3fc0e010c7fb6e.png]
+
+Use private browsing to run the lab
+
+   Using an Incognito or private browser window is the best way to run
+   this lab. This prevents any conflicts between your personal account and
+   the Student account, which may cause extra charges incurred to your
+   personal account.
+
+   Learn how to run distributed services on multiple Google Kubernetes
+   Engine (GKE) clusters in Google Cloud using Multi Cluster Ingress and
+   GKE Service Mesh
+
+   Duration: 2m setup · 90m access · 90m completion
+
+   AWS Region: []
+
+   Levels: advanced
+
+   Permalink: [23]https://www.skills.google/catalog_lab/32080
+   Got It
+
+   Additional Comments
+
+   ____________________________________________________________
+   ____________________________________________________________
+   ____________________________________________________________
+   ____________________________________________________________
+
+   Your progress will carry over, but the completion percentage might
+   change.
+   Preview
+
+References
+
+   1. file:///
+   2. file:///my_account/payments
+   3. file:///paths/4302
+   4. file:///paths/4302/course_templates/1501
+   5. https://www.recaptcha.net/recaptcha/api/fallback?k=6LeOI8IUAAAAAPkHlMAE9NReCD_1WD81iYlBlCnV
+   6. https://cloud.google.com/service-mesh
+   7. https://github.com/GoogleCloudPlatform/bank-of-anthos
+   8. https://cloud.google.com/sdk/gcloud
+   9. https://cloud.google.com/service-mesh/docs/overview
+  10. file:///
+  11. file:///
+  12. file:///catalog
+  13. file:///paths
+  14. file:///subscriptions
+  15. file:///profile/stay_on_track
+  16. file:///profile/badges
+  17. file:///my_account/profile
+  18. file:///users/sign_out
+  19. https://www.youtube.com/@googlecloud
+  20. file:///help
+  21. file:///terms_of_service
+  22. file:///privacy_policy
+  23. https://www.skills.google/catalog_lab/32080
