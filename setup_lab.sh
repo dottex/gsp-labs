@@ -11,8 +11,9 @@ set -e
 
 # --- Configuration ---
 export PROJECT_ID=$(gcloud config get-value project)
-export REGION=us-central1
-export ZONE=us-central1-a
+# Automatically detect region and zone if not set
+export REGION=${REGION:-$(gcloud compute project-info describe --format='value(commonInstanceMetadata.items.google-compute-default-region)')}
+export ZONE=${ZONE:-$(gcloud compute project-info describe --format='value(commonInstanceMetadata.items.google-compute-default-zone)')}
 
 echo "Starting setup for project: $PROJECT_ID in $ZONE"
 
@@ -84,8 +85,8 @@ gcloud container fleet memberships register cluster2 --gke-cluster=${ZONE}/clust
 
 # --- Multi-Cluster Features ---
 echo "Enabling Multi-Cluster Fleet Features..."
-gcloud container fleet multi-cluster-services enable --project=${PROJECT_ID}
-gcloud container fleet ingress enable --config-membership=cluster1 --location=${REGION} --project=${PROJECT_ID}
+gcloud container fleet multi-cluster-services enable --project=${PROJECT_ID} || true
+gcloud container fleet ingress enable --config-membership=cluster1 --location=${REGION} --project=${PROJECT_ID} || true
 
 # --- Task 3: Install Service Mesh ---
 echo "[Task 3] Installing GKE Service Mesh..."
@@ -103,9 +104,7 @@ kubectl --context=cluster1 label namespace asm-ingress istio-injection=enabled -
 kubectl --context=cluster2 create namespace asm-ingress || true
 kubectl --context=cluster2 label namespace asm-ingress istio-injection=enabled --overwrite
 
-# Resolve common Task 3 failure (modernization label)
-kubectl --context=cluster1 label namespace istio-system istio.io/rev=asm-managed --overwrite
-kubectl --context=cluster2 label namespace istio-system istio.io/rev=asm-managed --overwrite
+# Note: In managed ASM, we avoid manual labeling of istio-system to prevent configuration warnings.
 
 cat <<EOF > asm-ingress.yaml
 apiVersion: v1

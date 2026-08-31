@@ -50,8 +50,13 @@ The lab is designed to be executed within a **Google Cloud Shell** environment o
     kubectl apply -f ${HOME}/bank-of-anthos/kubernetes-manifests
     ```
 
-## Development Conventions
+## Current Investigation Status (Task 3)
 
-*   **Namespace Isolation**: The Cymbal Bank application is typically deployed in the `bank-of-anthos` namespace.
-*   **Sidecar Injection**: Namespaces are labeled with `istio-injection=enabled` to allow GKE Service Mesh to automatically inject Envoy proxies.
-*   **Private Clusters**: All application traffic is routed through private nodes, requiring authorized networks for API access.
+*   **Status**: Investigating Task 3 failure. Tasks 1, 2, and 4 are confirmed successful.
+*   **Findings**: The Service Mesh is operational, but a `MISSING_CONTROL_PLANE_CONFIG` warning was detected. Manual labeling of the `istio-system` namespace was identified as a potential cause and has been cleaned up.
+*   **Action Plan**: We are currently in a 10-minute wait period (as of 02:15 AM) to allow the grader to sync.
+*   **Current Environment**:
+    *   `PROJECT_ID`: qwiklabs-gcp-01-5541a8a99e26
+    *   `REGION`: us-west1
+    *   `ZONE`: us-west1-b
+*   **Automation**: `setup_lab.sh` has been updated to reflect these findings and automate the setup more robustly.
