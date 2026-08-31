@@ -50,8 +50,13 @@ The lab is designed to be executed within a **Google Cloud Shell** environment o
     kubectl apply -f ${HOME}/bank-of-anthos/kubernetes-manifests
     ```
 
-## Development Conventions
+## Current Investigation Status (Task 3)
 
-*   **Namespace Isolation**: The Cymbal Bank application is typically deployed in the `bank-of-anthos` namespace.
-*   **Sidecar Injection**: Namespaces are labeled with `istio-injection=enabled` to allow GKE Service Mesh to automatically inject Envoy proxies.
-*   **Private Clusters**: All application traffic is routed through private nodes, requiring authorized networks for API access.
+*   **Status**: Task 3 ("Install GKE Service Mesh") continues to fail the grader despite being functional.
+*   **Deep-Dive Findings**:
+    *   **Mesh Core**: ControlPlaneRevisions (`asm-managed`) are healthy in both clusters.
+    *   **Injection**: MutatingWebhooks (`istio-revision-tag-default`, `istiod-asm-managed`) are active. Pods in `asm-ingress` are successfully injected with `istio-proxy` (1.20.8-asm.88).
+    *   **Connectivity**: Ingress LoadBalancers are reachable and returning 200 OK for the Cymbal Bank frontend.
+    *   **Fleet**: `multiclusteringress` and `multiclusterservicediscovery` are enabled with `cluster1` as the config membership.
+*   **Action Plan**: Finalized setup script and documentation for support review.
+*   **Current Environment**: `PROJECT_ID`: qwiklabs-gcp-01-5541a8a99e26, `REGION`: us-west1, `ZONE`: us-west1-b.
