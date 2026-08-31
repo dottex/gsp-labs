@@ -99,12 +99,11 @@ until gcloud container fleet mesh describe --format=yaml | grep -q "code: REVISI
 done
 
 echo "[Task 3] Deploying Ingress Gateways..."
-kubectl --context=cluster1 create namespace asm-ingress || true
-kubectl --context=cluster1 label namespace asm-ingress istio-injection=enabled --overwrite
-kubectl --context=cluster2 create namespace asm-ingress || true
-kubectl --context=cluster2 label namespace asm-ingress istio-injection=enabled --overwrite
-
-# Note: In managed ASM, we avoid manual labeling of istio-system to prevent configuration warnings.
+# We follow today's instructions exactly: create ns, label istio-injection=enabled, apply yaml.
+for ctx in cluster1 cluster2; do
+    kubectl --context=$ctx create namespace asm-ingress || true
+    kubectl --context=$ctx label namespace asm-ingress istio-injection=enabled --overwrite
+done
 
 cat <<EOF > asm-ingress.yaml
 apiVersion: v1
@@ -134,13 +133,15 @@ spec:
   template:
     metadata:
       annotations:
+        # This is required to tell GKE Service Mesh to inject the gateway with the
+        # required configuration.
         inject.istio.io/templates: gateway
       labels:
         asm: ingressgateway
     spec:
       containers:
       - name: istio-proxy
-        image: auto
+        image: auto # The image will automatically update each time the pod starts.
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -168,6 +169,10 @@ EOF
 
 kubectl --context=cluster1 apply -f asm-ingress.yaml
 kubectl --context=cluster2 apply -f asm-ingress.yaml
+
+# Verification
+kubectl --context=cluster1 get pod,service -n asm-ingress
+kubectl --context=cluster2 get pod,service -n asm-ingress
 
 # --- Task 4: Deploy Cymbal Bank ---
 echo "[Task 4] Deploying Cymbal Bank..."
@@ -222,4 +227,4 @@ EOF
 kubectl --context=cluster1 apply -f asm-vs-gateway.yaml
 kubectl --context=cluster2 apply -f asm-vs-gateway.yaml
 
-echo "Setup Complete! Check progress on all tasks."
+echo "Setup Complete! Task 3 status: Mesh active, Ingress deployed, but grader failing."

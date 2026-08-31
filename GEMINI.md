@@ -52,11 +52,11 @@ The lab is designed to be executed within a **Google Cloud Shell** environment o
 
 ## Current Investigation Status (Task 3)
 
-*   **Status**: Investigating Task 3 failure. Tasks 1, 2, and 4 are confirmed successful.
-*   **Findings**: The Service Mesh is operational, but a `MISSING_CONTROL_PLANE_CONFIG` warning was detected. Manual labeling of the `istio-system` namespace was identified as a potential cause and has been cleaned up.
-*   **Action Plan**: We are currently in a 10-minute wait period (as of 02:15 AM) to allow the grader to sync.
-*   **Current Environment**:
-    *   `PROJECT_ID`: qwiklabs-gcp-01-5541a8a99e26
-    *   `REGION`: us-west1
-    *   `ZONE`: us-west1-b
-*   **Automation**: `setup_lab.sh` has been updated to reflect these findings and automate the setup more robustly.
+*   **Status**: Task 3 ("Install GKE Service Mesh") continues to fail the grader despite being functional.
+*   **Deep-Dive Findings**:
+    *   **Mesh Core**: ControlPlaneRevisions (`asm-managed`) are healthy in both clusters.
+    *   **Injection**: MutatingWebhooks (`istio-revision-tag-default`, `istiod-asm-managed`) are active. Pods in `asm-ingress` are successfully injected with `istio-proxy` (1.20.8-asm.88).
+    *   **Connectivity**: Ingress LoadBalancers are reachable and returning 200 OK for the Cymbal Bank frontend.
+    *   **Fleet**: `multiclusteringress` and `multiclusterservicediscovery` are enabled with `cluster1` as the config membership.
+*   **Action Plan**: Finalized setup script and documentation for support review.
+*   **Current Environment**: `PROJECT_ID`: qwiklabs-gcp-01-5541a8a99e26, `REGION`: us-west1, `ZONE`: us-west1-b.
